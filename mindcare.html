@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MindCare - Sistem Pakar Kesehatan Mental</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <!-- html2canvas & jspdf untuk generate PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    :root {
+      --ink: #0f0e17;
+      --ink-mid: #4a4861;
+      --ink-soft: #8e8ba8;
+      --paper: #f5f3ff;
+      --white: #ffffff;
+      --violet: #5b4fcf;
+      --violet-dark: #3d33a8;
+      --violet-glow: rgba(91, 79, 207, .18);
+      --rose: #e8637a;
+      --rose-soft: #fdf0f2;
+      --mint: #10c8a0;
+      --border: #e4e1f5;
+      --radius: 18px;
+      --radius-sm: 10px;
+      --shadow: 0 6px 32px rgba(91, 79, 207, .10);
+      --shadow-lg: 0 16px 64px rgba(91, 79, 207, .18);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 16px
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.65;
+      min-height: 100vh
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-family: 'Lora', serif;
+      line-height: 1.2
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit
+    }
+
+    button {
+      font-family: 'Outfit', sans-serif;
+      cursor: pointer
+    }
+
+    ul {
+      list-style: none
+    }
+
+    /* PAGE SYSTEM */
+    .page {
+      display: none;
+      animation: fadeUp .4s ease both
+    }
+
+    .page.active {
+      display: block
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(14px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    /* NAVBAR */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: rgba(245, 243, 255, .88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2.5rem
+    }
+
+    .nav-brand {
+      font-family: 'Lora', serif;
+      font-weight: 700;
+      font-size: 1.15rem;
+      color: var(--violet);
+      display: flex;
+      align-items: center;
+      gap: .45rem;
+      cursor: pointer
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center
+    }
+
+    .nav-links a {
+      font-size: .875rem;
+      font-weight: 500;
+      color: var(--ink-mid);
+      position: relative;
+      padding-bottom: 2px;
+      transition: color .2s;
+      cursor: pointer
+    }
+
+    .nav-links a::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--violet);
+      border-radius: 2px;
+      transition: width .25s ease
+    }
+
+    .nav-links a:hover,
+    .nav-links a.active {
+      color: var(--violet)
+    }
+
+    .nav-links a.active::after,
+    .nav-links a:hover::after {
+      width: 100%
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: .75rem
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+      padding: .55rem 1.3rem;
+      border-radius: 100px;
+      font-size: .875rem;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all .22s;
+      white-space: nowrap
+    }
+
+    .btn-primary {
+      background: var(--violet);
+      color: #fff
+    }
+
+    .btn-primary:hover {
+      background: var(--violet-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px var(--violet-glow)
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--violet);
+      border: 2px solid var(--violet)
+    }
+
+    .btn-outline:hover {
+      background: var(--violet);
+      color: #fff
+    }
+
+    .btn-lg {
+      padding: .8rem 2rem;
+      font-size: 1rem
+    }
+
+    /* HERO */
+    .hero {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 5.5rem 2rem 4rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center
+    }
+
+    .hero h1 {
+      font-size: 2.9rem;
+      font-weight: 700;
+      margin-bottom: 1.1rem;
+      letter-spacing: -.5px
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--violet);
+      background: linear-gradient(135deg, var(--violet), var(--rose));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text
+    }
+
+    .hero p {
+      font-size: 1rem;
+      color: var(--ink-mid);
+      margin-bottom: 2rem;
+      max-width: 420px
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: .9rem;
+      flex-wrap: wrap
+    }
+
+    .hero-visual {
+      border-radius: 28px;
+      overflow: hidden;
+      background: linear-gradient(145deg, #c7d2fe 0%, #f5d0fe 55%, #fecdd3 100%);
+      aspect-ratio: 5/4;
+      position: relative;
+      box-shadow: var(--shadow-lg)
+    }
+
+    .hero-visual-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1rem
+    }
+
+    .hero-blob {
+      font-size: 6rem;
+      filter: drop-shadow(0 8px 24px rgba(91, 79, 207, .3))
+    }
+
+    .hero-tagline {
+      font-family: 'Lora', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #3d33a8;
+      text-align: center;
+      padding: 0 2rem
+    }
+
+    /* ASSESSMENT */
+    .assessment-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 6rem
+    }
+
+    .step-eyebrow {
+      font-size: .72rem;
+      font-weight: 600;
+      color: var(--ink-soft);
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      margin-bottom: .45rem
+    }
+
+    .step-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: .75rem
+    }
+
+    .step-row h1 {
+      font-size: 1.85rem;
+      font-weight: 700
+    }
+
+    .step-pct {
+      font-size: .85rem;
+      color: var(--ink-mid);
+      font-weight: 500
+    }
+
+    .step-bar {
+      height: 6px;
+      background: #e4e1f5;
+      border-radius: 100px;
+      overflow: hidden;
+      margin-bottom: 2rem
+    }
+
+    .step-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--violet), var(--rose));
+      border-radius: 100px;
+      transition: width .6s ease
+    }
+
+    /* Assessment Card */
+    .acard {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden
+    }
+
+    .acard-body {
+      padding: 1.5rem 2rem
+    }
+
+    .acard-intro {
+      font-size: .9rem;
+      color: var(--ink-mid);
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .acard-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 2rem;
+      background: #ffffff;
+      gap: 1rem;
+    }
+
+    /* Symptom card */
+    .symptom-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      transition: all .2s
+    }
+
+    .symptom-card:hover {
+      box-shadow: var(--shadow);
+      border-color: var(--violet)
+    }
+
+    .symptom-question {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1rem
+    }
+
+    .symptom-icon {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--violet);
+      background: #eef2ff;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .symptom-text h3 {
+      font-size: .95rem;
+      font-weight: 600;
+      margin-bottom: .25rem;
+      font-family: 'Outfit', sans-serif
+    }
+
+    .symptom-text p {
+      font-size: .78rem;
+      color: var(--ink-soft);
+      line-height: 1.45
+    }
+
+    .symptom-weight-info {
+      font-size: .7rem;
+      color: var(--violet);
+      margin-top: .3rem;
+      font-weight: 600
+    }
+
+    .certainty-btns {
+      display: flex;
+      gap: .4rem;
+      flex-wrap: wrap;
+      margin-top: .5rem;
+      margin-left: 2.25rem
+    }
+
+    .cert-option {
+      padding: .38rem .8rem;
+      border-radius: 100px;
+      border: 1.5px solid var(--border);
+      background: #fff;
+      font-size: .75rem;
+      font-weight: 500;
+      color: var(--ink-mid);
+      cursor: pointer;
+      transition: all .18s
+    }
+
+    .cert-option:hover {
+      border-color: var(--violet);
+      color: var(--violet)
+    }
+
+    .cert-option.selected {
+      background: var(--violet);
+      border-color: var(--violet);
+      color: #fff
+    }
+
+    .info-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1.5rem
+    }
+
+    .info-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.1rem;
+      display: flex;
+      gap: .7rem;
+      align-items: flex-start
+    }
+
+    .info-card-ico {
+      font-size: 1.05rem;
+      margin-top: 2px
+    }
+
+    .info-card h5 {
+      font-size: .84rem;
+      font-weight: 600;
+      margin-bottom: .2rem
+    }
+
+    .info-card p {
+      font-size: .77rem;
+      color: var(--ink-mid);
+      line-height: 1.5
+    }
+
+    /* RESULTS */
+    .results-wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 3.5rem 1.5rem 6rem
+    }
+
+    .results-top-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem
+    }
+
+    .results-header h1 {
+      font-size: 2rem;
+      margin-bottom: .5rem
+    }
+
+    .results-header p {
+      font-size: .9rem;
+      color: var(--ink-mid);
+    }
+
+    .primary-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: var(--shadow)
+    }
+
+    .primary-left {
+      display: flex;
+      gap: 1.75rem;
+      align-items: flex-start
+    }
+
+    svg.donut {
+      width: 120px;
+      height: 120px
+    }
+
+    .donut-track {
+      fill: none;
+      stroke: #ede9fe;
+      stroke-width: 9
+    }
+
+    .donut-fill {
+      fill: none;
+      stroke: var(--violet);
+      stroke-width: 9;
+      stroke-linecap: round;
+      transition: stroke-dasharray 1.5s cubic-bezier(.22, 1, .36, 1)
+    }
+
+    .badge-top {
+      display: inline-block;
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      font-size: .73rem;
+      font-weight: 600;
+      padding: .18rem .65rem;
+      border-radius: 100px;
+      margin-bottom: .45rem
+    }
+
+    .primary-info h2 {
+      font-size: 1.35rem;
+      margin-bottom: .5rem
+    }
+
+    .primary-info p {
+      font-size: .88rem;
+      color: var(--ink-mid);
+      line-height: 1.6;
+      margin-bottom: .9rem
+    }
+
+    .pill-list {
+      display: flex;
+      flex-direction: column;
+      gap: .4rem
+    }
+
+    .pill-list li {
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      font-size: .82rem;
+      color: var(--ink-mid)
+    }
+
+    .pill-list li::before {
+      content: '✓';
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      background: var(--mint);
+      color: #fff;
+      border-radius: 50%;
+      font-size: .6rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center
+    }
+
+    .result-actions {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+      margin-top: 1.5rem
+    }
+
+    .ind-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin: 1.5rem 0
+    }
+
+    .ind-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem
+    }
+
+    .ind-card .ind-name {
+      font-weight: 600;
+      font-size: .85rem
+    }
+
+    .ind-card .ind-pct {
+      color: var(--violet);
+      font-weight: 700
+    }
+
+    .ind-bar {
+      height: 5px;
+      background: #ede9fe;
+      border-radius: 100px;
+      margin: .5rem 0
+    }
+
+    .ind-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--violet), #a78bfa);
+      border-radius: 100px
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 3rem;
+      background: var(--white);
+      border-radius: var(--radius)
+    }
+
+    /* CF STEP-BY-STEP STYLES */
+    .cf-section {
+      margin-top: 2rem
+    }
+
+    .cf-section-title {
+      font-family: 'Lora', serif;
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem
+    }
+
+    .cf-disorder-block {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 1.25rem;
+      overflow: hidden;
+    }
+
+    .cf-disorder-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      background: #faf9ff;
+    }
+
+    .cf-disorder-header:hover {
+      background: #f0edff
+    }
+
+    .cf-disorder-name {
+      font-weight: 700;
+      font-size: .95rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem
+    }
+
+    .cf-disorder-badge {
+      font-size: .72rem;
+      font-weight: 600;
+      padding: .2rem .65rem;
+      border-radius: 100px;
+      border: 1px solid;
+    }
+
+    .badge-top-result {
+      background: #f0fdf4;
+      color: #166534;
+      border-color: #bbf7d0
+    }
+
+    .badge-other {
+      background: #f5f3ff;
+      color: var(--violet);
+      border-color: #c4b5fd
+    }
+
+    .badge-zero {
+      background: #f9fafb;
+      color: #6b7280;
+      border-color: #e5e7eb
+    }
+
+    .cf-disorder-score {
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--violet);
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .cf-disorder-score.score-zero {
+      color: var(--ink-soft)
+    }
+
+    .cf-chevron {
+      font-size: .75rem;
+      color: var(--ink-soft);
+      transition: transform .25s
+    }
+
+    .cf-chevron.open {
+      transform: rotate(180deg)
+    }
+
+    .cf-disorder-body {
+      display: none;
+      padding: 1.25rem
+    }
+
+    .cf-disorder-body.open {
+      display: block
+    }
+
+    .cf-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .8rem;
+      margin-bottom: 1rem
+    }
+
+    .cf-table th {
+      background: #f0edff;
+      color: var(--violet);
+      font-weight: 700;
+      padding: .5rem .75rem;
+      text-align: left;
+      font-size: .75rem;
+    }
+
+    .cf-table th:nth-child(3),
+    .cf-table th:nth-child(4),
+    .cf-table th:nth-child(5) {
+      text-align: center
+    }
+
+    .cf-table td {
+      padding: .5rem .75rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--ink-mid);
+      vertical-align: middle
+    }
+
+    .cf-table tr:last-child td {
+      border-bottom: none
+    }
+
+    .cf-table td:nth-child(3),
+    .cf-table td:nth-child(4),
+    .cf-table td:nth-child(5) {
+      text-align: center
+    }
+
+    .cf-table td:nth-child(5) {
+      font-weight: 700;
+      color: var(--ink)
+    }
+
+    .cf-selected-row td {
+      background: #f5f3ff
+    }
+
+    .cf-skipped-row td {
+      opacity: .45
+    }
+
+    .cf-skipped-label {
+      font-size: .7rem;
+      background: #f3f4f6;
+      color: #6b7280;
+      padding: .1rem .45rem;
+      border-radius: 4px
+    }
+
+    .formula-box {
+      background: linear-gradient(135deg, #f0edff, #fdf0f2);
+      border: 1px solid #c4b5fd;
+      border-radius: var(--radius-sm);
+      padding: .85rem 1.1rem;
+      margin-bottom: 1rem;
+      font-size: .8rem;
+      color: var(--ink-mid);
+      line-height: 1.7;
+    }
+
+    .formula-box code {
+      background: #ede9fe;
+      color: var(--violet);
+      padding: .1rem .35rem;
+      border-radius: 4px;
+      font-size: .78rem;
+      font-weight: 600;
+    }
+
+    .combo-steps {
+      display: flex;
+      flex-direction: column;
+      gap: .55rem;
+      margin-bottom: 1rem
+    }
+
+    .combo-step {
+      display: flex;
+      align-items: flex-start;
+      gap: .75rem;
+      background: #f9f8ff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: .65rem .9rem;
+      font-size: .8rem;
+    }
+
+    .combo-step-num {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+      background: var(--violet);
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .65rem;
+      font-weight: 700;
+      margin-top: 1px;
+    }
+
+    .combo-step-content {
+      line-height: 1.6;
+      color: var(--ink-mid)
+    }
+
+    .combo-step-content b {
+      color: var(--ink)
+    }
+
+    .combo-step-result {
+      margin-top: .2rem;
+      background: #eef2ff;
+      border-radius: 4px;
+      padding: .15rem .5rem;
+      display: inline-block;
+      color: var(--violet);
+      font-weight: 700;
+    }
+
+    .cf-final {
+      background: var(--white);
+      border: 2px solid var(--violet);
+      border-radius: var(--radius-sm);
+      padding: .85rem 1.1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cf-final-label {
+      font-size: .85rem;
+      font-weight: 600;
+      color: var(--ink)
+    }
+
+    .cf-final-value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--violet)
+    }
+
+    .cf-no-symptom {
+      font-size: .82rem;
+      color: var(--ink-soft);
+      text-align: center;
+      padding: .75rem;
+      font-style: italic;
+    }
+
+    /* FOOTER */
+    .footer {
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      padding: 2rem 2.5rem;
+      text-align: center;
+      font-size: .75rem;
+      color: var(--ink-soft)
+    }
+
+    /* PDF Export specific - menyembunyikan tombol saat export */
+    .pdf-export-hide {
+      display: none !important;
+    }
+
+    /* RESPONSIVE */
+    @media(max-width:860px) {
+      .hero {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        padding: 3rem 1.25rem
+      }
+
+      .hero h1 {
+        font-size: 2rem
+      }
+
+      .primary-card {
+        grid-template-columns: 1fr
+      }
+
+      .primary-left {
+        flex-direction: column;
+        align-items: center;
+        text-align: center
+      }
+
+      .ind-grid {
+        grid-template-columns: 1fr
+      }
+
+      .info-cards {
+        grid-template-columns: 1fr
+      }
+
+      .nav-links {
+        display: none
+      }
+
+      .certainty-btns {
+        margin-left: 0
+      }
+
+      .symptom-question {
+        flex-direction: column
+      }
+
+      .acard-nav {
+        flex-direction: column-reverse
+      }
+
+      .acard-nav .btn {
+        width: 100%;
+        justify-content: center
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="nav">
+    <div class="nav-brand" onclick="showPage('home')">🧠 MindCare</div>
+    <div class="nav-links">
+      <a onclick="showPage('home')" id="nav-home">Beranda</a>
+      <a onclick="showPage('assessment')" id="nav-assessment">Asesmen</a>
+      <a onclick="showPage('results')" id="nav-results">Hasil</a>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-primary" onclick="showPage('assessment')">Mulai Asesmen</button>
+    </div>
+  </nav>
+
+  <!-- HOME -->
+  <div id="page-home" class="page active">
+    <section class="hero">
+      <div>
+        <h1>Dukungan personal untuk <em>perjalanan kesehatan mental</em> Anda.</h1>
+        <p>Pahami kondisi kesehatan mental Anda dengan sistem pakar berbasis Certainty Factor. Jawab pertanyaan tentang
+          gejala yang Anda rasakan, dan dapatkan hasil analisis yang jelas.</p>
+        <div class="hero-btns">
+          <button class="btn btn-primary btn-lg" onclick="showPage('assessment')">Mulai Asesmen →</button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-visual-inner">
+          <div class="hero-blob">🧠</div>
+          <div class="hero-tagline">Sistem Pakar Kesehatan Mental<br>Metode Certainty Factor</div>
+        </div>
+      </div>
+    </section>
+    <footer class="footer">
+      <p>© 2026 MindCare — Sistem Pakar Diagnosis Gangguan Mental | Hanya untuk tujuan edukasi</p>
+    </footer>
+  </div>
+
+  <!-- ASSESSMENT -->
+  <div id="page-assessment" class="page">
+    <div class="assessment-wrap">
+      <div id="assessment-content"></div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="page-results" class="page">
+    <div class="results-wrap" id="results-content"></div>
+  </div>
+
+  <script>
+    /* ============================================================
+       DATASET
+    ============================================================ */
+    const DISORDERS = {
+      P001: { name: "Anxiety (Kecemasan)", code: "P001" },
+      P002: { name: "Depression (Depresi)", code: "P002" },
+      P003: { name: "Loneliness (Kesepian)", code: "P003" },
+      P004: { name: "Stress", code: "P004" }
+    };
+
+    const SYMPTOMS = {
+      G001: { name: "Merasa gugup / cemas", expertCF: 0.8, question: "Apakah Anda merasa gugup atau cemas tanpa sebab yang jelas?" },
+      G002: { name: "Mengalami serangan panik", expertCF: 0.9, question: "Apakah Anda pernah mengalami serangan panik?" },
+      G003: { name: "Napas cepat / sesak", expertCF: 0.7, question: "Apakah Anda sering merasa napas cepat atau sesak?" },
+      G004: { name: "Berkeringat berlebihan", expertCF: 0.6, question: "Apakah Anda sering berkeringat berlebihan meski tidak beraktivitas berat?" },
+      G005: { name: "Sulit berkonsentrasi", expertCF: 0.6, question: "Apakah Anda sulit berkonsentrasi pada satu hal?" },
+      G006: { name: "Susah tidur", expertCF: 0.7, question: "Apakah Anda mengalami kesulitan tidur (insomnia)?" },
+      G007: { name: "Kesulitan bekerja", expertCF: 0.6, question: "Apakah Anda merasa kesulitan menyelesaikan pekerjaan sehari-hari?" },
+      G008: { name: "Merasa tidak ada harapan", expertCF: 0.9, question: "Apakah Anda sering merasa tidak ada harapan untuk masa depan?" },
+      G009: { name: "Mudah marah", expertCF: 0.6, question: "Apakah Anda merasa lebih mudah marah dari biasanya?" },
+      G010: { name: "Bereaksi berlebihan", expertCF: 0.5, question: "Apakah Anda sering bereaksi berlebihan terhadap hal-hal kecil?" },
+      G011: { name: "Perubahan pola makan", expertCF: 0.5, question: "Apakah Anda mengalami perubahan pola makan yang signifikan?" },
+      G012: { name: "Pikiran untuk menyakiti diri", expertCF: 0.9, question: "Apakah Anda pernah memiliki pikiran untuk menyakiti diri sendiri?" },
+      G013: { name: "Merasa lelah / kelelahan", expertCF: 0.7, question: "Apakah Anda merasa lelah sepanjang waktu meski sudah istirahat?" },
+      G014: { name: "Kehilangan teman dekat", expertCF: 0.6, question: "Apakah Anda baru saja kehilangan teman dekat atau merasa kehilangan hubungan berarti?" },
+      G015: { name: "Kecanduan media sosial", expertCF: 0.5, question: "Apakah Anda merasa kecanduan media sosial?" },
+      G016: { name: "Berat badan bertambah", expertCF: 0.4, question: "Apakah berat badan Anda bertambah tanpa sebab yang jelas?" },
+      G017: { name: "Terlalu mementingkan harta", expertCF: 0.4, question: "Apakah Anda terlalu mementingkan harta benda atau materi?" },
+      G018: { name: "Menjadi introvert / menarik diri", expertCF: 0.6, question: "Apakah Anda merasa lebih menarik diri dari pergaulan?" },
+      G019: { name: "Muncul kenangan buruk", expertCF: 0.8, question: "Apakah kenangan buruk atau traumatis sering muncul tanpa sengaja?" },
+      G020: { name: "Sering mimpi buruk", expertCF: 0.7, question: "Apakah Anda sering mengalami mimpi buruk?" },
+      G021: { name: "Menghindari orang atau aktivitas", expertCF: 0.7, question: "Apakah Anda menghindari bertemu orang atau melakukan aktivitas tertentu?" },
+      G022: { name: "Berpikiran negatif", expertCF: 0.8, question: "Apakah Anda sering memiliki pikiran negatif tentang diri sendiri?" },
+      G023: { name: "Kesulitan berkonsentrasi", expertCF: 0.7, question: "Apakah Anda sulit fokus saat membaca atau mengerjakan sesuatu?" },
+      G024: { name: "Menyalahkan diri sendiri", expertCF: 0.8, question: "Apakah Anda sering menyalahkan diri sendiri atas hal-hal yang terjadi?" }
+    };
+
+    const RULES = {
+      P001: { symptoms: ["G001", "G002", "G003", "G004", "G005", "G006"], disorderName: "Anxiety (Kecemasan)" },
+      P002: { symptoms: ["G007", "G008", "G009", "G010", "G011", "G012"], disorderName: "Depression (Depresi)" },
+      P003: { symptoms: ["G013", "G014", "G015", "G016", "G017", "G018"], disorderName: "Loneliness (Kesepian)" },
+      P004: { symptoms: ["G019", "G020", "G021", "G022", "G023", "G024"], disorderName: "Stress" }
+    };
+
+    const CERTAINTY_LEVELS = [
+      { key: 'tidak', label: 'Tidak', weight: 0 },
+      { key: 'tidak_tahu', label: 'Tidak Tahu', weight: 0.2 },
+      { key: 'kurang_yakin', label: 'Kurang Yakin', weight: 0.4 },
+      { key: 'cukup_yakin', label: 'Cukup Yakin', weight: 0.6 },
+      { key: 'yakin', label: 'Yakin', weight: 0.8 },
+      { key: 'sangat_yakin', label: 'Sangat Yakin', weight: 1.0 }
+    ];
+
+    /* ============================================================
+       STATE
+    ============================================================ */
+    let userAnswers = {};
+
+    /* ============================================================
+       NAVIGATION
+    ============================================================ */
+    function showPage(pageName) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + pageName).classList.add('active');
+      document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+      const lnk = document.getElementById('nav-' + pageName);
+      if (lnk) lnk.classList.add('active');
+      if (pageName === 'assessment') renderAssessment();
+      if (pageName === 'results') renderResults();
+      window.scrollTo(0, 0);
+    }
+
+    /* ============================================================
+       ASSESSMENT
+    ============================================================ */
+    function renderAssessment() {
+      let symptomsHtml = '';
+      let idx = 0;
+      for (const [symId, symData] of Object.entries(SYMPTOMS)) {
+        idx++;
+        const saved = userAnswers[symId];
+        const selectedLevel = saved ? saved.userCF : null;
+        let certBtns = '';
+        for (const level of CERTAINTY_LEVELS) {
+          const isSel = (selectedLevel === level.weight);
+          certBtns += `<button class="cert-option${isSel ? ' selected' : ''}"
+        onclick="setCertainty('${symId}',${level.weight},this)">${level.label}</button>`;
+        }
+        symptomsHtml += `
+      <div class="symptom-card" id="card-${symId}">
+        <div class="symptom-question">
+          <div class="symptom-icon">${idx}</div>
+          <div class="symptom-text">
+            <h3>${symData.question}</h3>
+            <p>${symData.name}</p>
+          </div>
+        </div>
+        <div class="certainty-btns" id="btns-${symId}">${certBtns}</div>
+      </div>`;
+      }
+
+      const totalAnswered = Object.keys(userAnswers).length;
+      const totalSymptoms = Object.keys(SYMPTOMS).length;
+      const progress = Math.round((totalAnswered / totalSymptoms) * 100);
+
+      document.getElementById('assessment-content').innerHTML = `
+    <div class="step-eyebrow">ASESMEN GEJALA</div>
+    <div class="step-row">
+      <h1>Identifikasi Gejala</h1>
+      <span class="step-pct" id="pct-label">${progress}% Terisi</span>
+    </div>
+    <div class="step-bar"><div class="step-bar-fill" id="prog-fill" style="width:${progress}%"></div></div>
+
+    <div class="acard">
+      <div class="acard-body">
+        <p class="acard-intro">
+          Silakan jawab setiap pertanyaan di bawah ini dengan jujur. Pilih tingkat keyakinan Anda untuk setiap gejala.
+          <strong>Semua pertanyaan wajib diisi</strong> untuk mendapatkan hasil yang akurat.
+        </p>
+        ${symptomsHtml}
+      </div>
+
+      <div class="acard-nav">
+        <button class="btn btn-outline" onclick="resetAnswers()">↺ Reset Semua</button>
+        <button class="btn btn-primary btn-lg" onclick="submitAssessment()">Lihat Hasil Analisis →</button>
+      </div>
+    </div>
+
+    <div class="info-cards">
+      <div class="info-card">
+        <div class="info-card-ico">💡</div>
+        <div><h5>Metode Certainty Factor</h5><p>Sistem menggabungkan bobot kepakaran dengan tingkat keyakinan Anda: CF[H,e] = CF Pakar × CF User.</p></div>
+      </div>
+      <div class="info-card">
+        <div class="info-card-ico">🔒</div>
+        <div><h5>Data Tidak Disimpan</h5><p>Jawaban Anda hanya digunakan untuk sesi ini dan tidak dikirim ke server manapun.</p></div>
+      </div>
+    </div>
+  `;
+    }
+
+    function setCertainty(symptomId, userWeight, btnElement) {
+      const symptom = SYMPTOMS[symptomId];
+      if (!symptom) return;
+      userAnswers[symptomId] = { userCF: userWeight, expertCF: symptom.expertCF };
+      const container = document.getElementById('btns-' + symptomId);
+      if (container) {
+        container.querySelectorAll('.cert-option').forEach(b => b.classList.remove('selected'));
+        btnElement.classList.add('selected');
+      }
+      const totalAnswered = Object.keys(userAnswers).length;
+      const totalSymptoms = Object.keys(SYMPTOMS).length;
+      const progress = Math.round((totalAnswered / totalSymptoms) * 100);
+      const fill = document.getElementById('prog-fill');
+      const pct = document.getElementById('pct-label');
+      if (fill) fill.style.width = progress + '%';
+      if (pct) pct.textContent = progress + '% Terisi';
+      const card = document.getElementById('card-' + symptomId);
+      if (card) { card.style.borderColor = 'var(--mint)'; setTimeout(() => { if (card) card.style.borderColor = 'var(--border)' }, 500) }
+    }
+
+    function resetAnswers() { userAnswers = {}; renderAssessment(); }
+
+    function submitAssessment() {
+      const totalSymptoms = Object.keys(SYMPTOMS).length;
+      const answeredCount = Object.keys(userAnswers).length;
+      if (answeredCount < totalSymptoms) {
+        alert(`Silakan jawab semua ${totalSymptoms} pertanyaan terlebih dahulu.\nAnda baru menjawab ${answeredCount} gejala.`);
+        return;
+      }
+      showPage('results');
+    }
+
+    /* ============================================================
+       CF ENGINE
+    ============================================================ */
+    function combineCF(cf1, cf2) {
+      if (cf1 >= 0 && cf2 >= 0) return cf1 + cf2 * (1 - cf1);
+      if (cf1 < 0 && cf2 < 0) return cf1 + cf2 * (1 + cf1);
+      return (cf1 + cf2) / (1 - Math.min(Math.abs(cf1), Math.abs(cf2)));
+    }
+
+    function calculateCFScores() {
+      const scores = {};
+      for (const [disorderCode, rule] of Object.entries(RULES)) {
+        let combined = 0; let hasAny = false;
+        for (const symId of rule.symptoms) {
+          const answer = userAnswers[symId];
+          if (answer && answer.userCF > 0) {
+            const cfHe = answer.expertCF * answer.userCF;
+            combined = hasAny ? combineCF(combined, cfHe) : cfHe;
+            hasAny = true;
+          }
+        }
+        scores[disorderCode] = hasAny && combined > 0 ? Math.round(combined * 100) : 0;
+      }
+      return Object.entries(scores).sort((a, b) => b[1] - a[1]);
+    }
+
+    /* ============================================================
+       STEP-BY-STEP CF CALCULATION DETAIL
+    ============================================================ */
+    function buildCFStepByStep(disorderCode) {
+      const rule = RULES[disorderCode];
+      const symptoms = rule.symptoms;
+
+      const selectedSyms = [];
+      const skippedSyms = [];
+      for (const symId of symptoms) {
+        const s = SYMPTOMS[symId];
+        const ans = userAnswers[symId];
+        if (ans && ans.userCF > 0) {
+          const cfHe = parseFloat((s.expertCF * ans.userCF).toFixed(4));
+          const levelLabel = CERTAINTY_LEVELS.find(l => l.weight === ans.userCF)?.label || '-';
+          selectedSyms.push({ symId, name: s.name, expertCF: s.expertCF, userCF: ans.userCF, cfHe, levelLabel });
+        } else {
+          const levelLabel = ans ? CERTAINTY_LEVELS.find(l => l.weight === ans.userCF)?.label || 'Tidak' : 'Tidak';
+          skippedSyms.push({ symId, name: s.name, expertCF: s.expertCF, levelLabel });
+        }
+      }
+
+      if (selectedSyms.length === 0) {
+        return `<div class="cf-no-symptom">Tidak ada gejala yang dipilih (CF User > 0) untuk gangguan ini.</div>`;
+      }
+
+      let tableRows = '';
+      for (const sym of selectedSyms) {
+        tableRows += `<tr class="cf-selected-row">
+       <td><strong>${sym.symId}</strong></td>
+       <td>${sym.name}</td>
+       <td>${sym.expertCF}</td>
+       <td>${sym.userCF} <span style="font-size:.68rem;color:var(--ink-soft)">(${sym.levelLabel})</span></td>
+       <td>${sym.cfHe}</td>
+      </tr>`;
+      }
+      for (const sym of skippedSyms) {
+        tableRows += `<tr class="cf-skipped-row">
+       <td>${sym.symId}</td>
+       <td>${sym.name}</td>
+       <td>${sym.expertCF}</td>
+       <td>0 <span class="cf-skipped-label">${sym.levelLabel}</span></td>
+       <td>—</td>
+      </tr>`;
+      }
+
+      let comboHtml = '';
+      if (selectedSyms.length === 1) {
+        comboHtml = `<div class="combo-step">
+      <div class="combo-step-num">1</div>
+      <div class="combo-step-content">
+        Hanya satu gejala aktif, tidak perlu kombinasi.<br>
+        <b>CF Final = CF[H,e] dari ${selectedSyms[0].symId}</b>
+        <div class="combo-step-result">= ${selectedSyms[0].cfHe}</div>
+      </div>
+    </div>`;
+      } else {
+        let prev = selectedSyms[0].cfHe;
+        comboHtml += `<div class="combo-step">
+      <div class="combo-step-num">1</div>
+      <div class="combo-step-content">
+        Nilai awal CF dari <b>${selectedSyms[0].symId}</b>:
+        <div class="combo-step-result">CF₁ = ${prev.toFixed(4)}</div>
+      </div>
+    </div>`;
+
+        for (let i = 1; i < selectedSyms.length; i++) {
+          const curr = selectedSyms[i];
+          const newCF = parseFloat(combineCF(prev, curr.cfHe).toFixed(4));
+          const stepNum = i + 1;
+          comboHtml += `<div class="combo-step">
+        <div class="combo-step-num">${stepNum}</div>
+        <div class="combo-step-content">
+          Kombinasikan dengan <b>${curr.symId}</b> (CF[H,e] = ${curr.cfHe}):<br>
+          <code style="font-size:.77rem;background:#ede9fe;color:var(--violet);padding:.1rem .35rem;border-radius:4px">
+            CF = ${prev.toFixed(4)} + ${curr.cfHe} × (1 − ${prev.toFixed(4)})
+          </code><br>
+          <code style="font-size:.77rem;background:#ede9fe;color:var(--violet);padding:.1rem .35rem;border-radius:4px">
+            CF = ${prev.toFixed(4)} + ${curr.cfHe} × ${parseFloat((1 - prev).toFixed(4))}
+          </code>
+          <div class="combo-step-result">CF${stepNum} = ${newCF.toFixed(4)}</div>
+        </div>
+      </div>`;
+          prev = newCF;
+        }
+      }
+
+      const finalCF = selectedSyms.length === 1
+        ? selectedSyms[0].cfHe
+        : parseFloat((() => {
+          let c = selectedSyms[0].cfHe;
+          for (let i = 1; i < selectedSyms.length; i++) c = combineCF(c, selectedSyms[i].cfHe);
+          return c;
+        })().toFixed(4));
+
+      const finalPct = Math.round(finalCF * 100);
+
+      return `
+    <div class="formula-box">
+      <strong>Rumus:</strong><br>
+      • <code>CF[H,e] = CF Pakar × CF User</code> (untuk setiap gejala)<br>
+      • <code>CF Kombinasi = CF₁ + CF₂ × (1 − CF₁)</code> (jika CF₁, CF₂ ≥ 0)
+    </div>
+
+    <table class="cf-table">
+      <thead>
+        <tr><th>Kode</th><th>Nama Gejala</th><th>CF Pakar</th><th>CF User</th><th>CF[H,e]</th></tr>
+      </thead>
+      <tbody>${tableRows}</tbody>
+    </table>
+
+    <p style="font-size:.78rem;color:var(--ink-soft);margin-bottom:.85rem">
+      <span style="display:inline-block;width:10px;height:10px;background:#f5f3ff;border:1px solid #c4b5fd;border-radius:2px;margin-right:.3rem"></span>Baris aktif &nbsp;
+      <span style="display:inline-block;width:10px;height:10px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:2px;margin-right:.3rem;opacity:.5"></span>Baris tidak aktif (CF User = 0)
+    </p>
+
+    <p style="font-size:.82rem;font-weight:700;color:var(--ink);margin-bottom:.65rem">Langkah Kombinasi CF:</p>
+    <div class="combo-steps">${comboHtml}</div>
+
+    <div class="cf-final">
+      <span class="cf-final-label">Nilai CF Akhir — ${rule.disorderName}</span>
+      <span class="cf-final-value">${finalPct}% (${finalCF.toFixed(4)})</span>
+    </div>
+  `;
+    }
+
+    function toggleCFBlock(code) {
+      const body = document.getElementById('cf-body-' + code);
+      const chev = document.getElementById('cf-chev-' + code);
+      if (!body || !chev) return;
+      const isOpen = body.classList.contains('open');
+      body.classList.toggle('open', !isOpen);
+      chev.classList.toggle('open', !isOpen);
+      if (!isOpen && body.innerHTML.trim() === '') {
+        body.innerHTML = buildCFStepByStep(code);
+      }
+    }
+
+    /* ============================================================
+       PDF EXPORT FUNCTION - MENGUNDUH HASIL SEBAGAI PDF
+    ============================================================ */
+    async function downloadResultsAsPDF() {
+      const resultsElement = document.getElementById('results-content');
+      if (!resultsElement) return;
+
+      // Tampilkan loading
+      const loadingToast = document.createElement('div');
+      loadingToast.textContent = '⏳ Sedang menyiapkan PDF, mohon tunggu...';
+      loadingToast.style.position = 'fixed';
+      loadingToast.style.bottom = '20px';
+      loadingToast.style.left = '50%';
+      loadingToast.style.transform = 'translateX(-50%)';
+      loadingToast.style.backgroundColor = '#0f0e17';
+      loadingToast.style.color = '#fff';
+      loadingToast.style.padding = '10px 20px';
+      loadingToast.style.borderRadius = '40px';
+      loadingToast.style.fontSize = '0.85rem';
+      loadingToast.style.zIndex = '9999';
+      loadingToast.style.fontWeight = '600';
+      document.body.appendChild(loadingToast);
+
+      try {
+        // Sembunyikan tombol aksi yang tidak perlu untuk PDF
+        const actionButtons = resultsElement.querySelectorAll('.result-actions .btn');
+        const downloadButton = resultsElement.querySelector('.download-pdf-btn');
+        const otherButtons = resultsElement.querySelectorAll('.btn-outline, .btn-primary');
+
+        actionButtons.forEach(btn => btn.classList.add('pdf-export-hide'));
+        if (downloadButton) downloadButton.classList.add('pdf-export-hide');
+
+        // Clone element untuk PDF
+        const cloneElement = resultsElement.cloneNode(true);
+
+        // Hapus class pdf-export-hide dari clone
+        cloneElement.querySelectorAll('.pdf-export-hide').forEach(el => el.remove());
+
+        // Tambahkan header untuk PDF
+        const headerDiv = document.createElement('div');
+        headerDiv.style.textAlign = 'center';
+        headerDiv.style.marginBottom = '20px';
+        headerDiv.style.padding = '20px';
+        headerDiv.style.borderBottom = '2px solid #5b4fcf';
+        headerDiv.innerHTML = `
+          <h1 style="font-family:'Lora',serif;color:#5b4fcf;margin-bottom:8px;">🧠 MindCare</h1>
+          <p style="font-family:'Outfit',sans-serif;color:#4a4861;">Laporan Hasil Asesmen Kesehatan Mental</p>
+          <p style="font-family:'Outfit',sans-serif;font-size:12px;color:#8e8ba8;margin-top:8px;">Tanggal: ${new Date().toLocaleString('id-ID')}</p>
+        `;
+
+        // Buat container untuk PDF
+        const pdfContainer = document.createElement('div');
+        pdfContainer.style.backgroundColor = '#f5f3ff';
+        pdfContainer.style.padding = '20px';
+        pdfContainer.style.width = '100%';
+        pdfContainer.appendChild(headerDiv);
+        pdfContainer.appendChild(cloneElement);
+
+        // Tambahkan footer disclaimer
+        const footerDiv = document.createElement('div');
+        footerDiv.style.textAlign = 'center';
+        footerDiv.style.marginTop = '30px';
+        footerDiv.style.padding = '15px';
+        footerDiv.style.borderTop = '1px solid #e4e1f5';
+        footerDiv.style.fontSize = '11px';
+        footerDiv.style.color = '#8e8ba8';
+        footerDiv.innerHTML = '⚠️ Hanya untuk tujuan edukasi. Bukan pengganti diagnosis medis profesional. © 2026 MindCare';
+        pdfContainer.appendChild(footerDiv);
+
+        document.body.appendChild(pdfContainer);
+
+        // Gunakan html2canvas
+        const canvas = await html2canvas(pdfContainer, {
+          scale: 2,
+          backgroundColor: '#f5f3ff',
+          logging: false,
+          useCORS: true
+        });
+
+        document.body.removeChild(pdfContainer);
+
+        const imgData = canvas.toDataURL('image/png');
+        const { jsPDF } = window.jspdf;
+
+        // Tentukan orientasi berdasarkan panjang konten
+        const imgWidth = 210; // A4 width in mm
+        const pageHeight = 297; // A4 height in mm
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let pdf = new jsPDF('p', 'mm', 'a4');
+        let position = 0;
+
+        if (imgHeight <= pageHeight) {
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        } else {
+          let heightLeft = imgHeight;
+          let page = 1;
+          pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+          while (heightLeft > 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+            page++;
+          }
+        }
+
+        pdf.save(`MindCare_Report_${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.pdf`);
+
+      } catch (error) {
+        console.error('Error generating PDF:', error);
+        alert('Maaf, terjadi kesalahan saat membuat PDF. Silakan coba lagi.');
+      } finally {
+        document.body.removeChild(loadingToast);
+        // Kembalikan tombol
+        const btns = resultsElement.querySelectorAll('.result-actions .btn, .download-pdf-btn');
+        btns.forEach(btn => btn.classList.remove('pdf-export-hide'));
+      }
+    }
+
+    /* ============================================================
+       RESULTS
+    ============================================================ */
+    function renderResults() {
+      const totalAnswered = Object.keys(userAnswers).length;
+      const totalSymptoms = Object.keys(SYMPTOMS).length;
+
+      if (totalAnswered < totalSymptoms) {
+        document.getElementById('results-content').innerHTML = `
+      <div class="no-results">
+        <div style="font-size:3rem">⚠️</div>
+        <h2>Asesmen Belum Lengkap</h2>
+        <p>Anda belum menjawab semua pertanyaan. Silakan lengkapi asesmen terlebih dahulu.</p>
+        <button class="btn btn-primary" style="margin-top:1rem" onclick="showPage('assessment')">Lanjutkan Asesmen</button>
+      </div>`;
+        return;
+      }
+
+      const scores = calculateCFScores();
+      const hasResults = scores.some(s => s[1] > 0);
+
+      if (!hasResults) {
+        document.getElementById('results-content').innerHTML = `
+      <div class="no-results">
+        <div style="font-size:3rem">🌿</div>
+        <h2>Tidak Ada Gejala Signifikan</h2>
+        <p>Tidak ditemukan pola yang mengarah pada gangguan mental tertentu.</p>
+        <div class="result-actions" style="justify-content:center;margin-top:1.5rem">
+          <button class="btn btn-outline" onclick="resetAnswers();showPage('assessment')">🔄 Ulangi Asesmen</button>
+        </div>
+      </div>`;
+        return;
+      }
+
+      const topCode = scores[0][0];
+      const topScore = scores[0][1];
+      const topDisorder = DISORDERS[topCode];
+      const rule = RULES[topCode];
+      const relatedSymptoms = rule.symptoms.map(id => SYMPTOMS[id]?.name).filter(Boolean);
+
+      let otherHtml = '';
+      const others = scores.slice(1).filter(s => s[1] > 0);
+      if (others.length) {
+        otherHtml = `<div style="margin-top:1.5rem"><h2 style="font-family:'Lora',serif;font-size:1.2rem;margin-bottom:1rem">Kemungkinan Lainnya</h2>
+      <div class="ind-grid">
+        ${others.map(([code, score]) => `
+          <div class="ind-card">
+            <div style="display:flex;justify-content:space-between">
+              <span class="ind-name">${DISORDERS[code]?.name || code}</span>
+              <span class="ind-pct">${score}%</span>
+            </div>
+            <div class="ind-bar"><div class="ind-bar-fill" style="width:${score}%"></div></div>
+          </div>`).join('')}
+      </div></div>`;
+      }
+
+      const cfBlocks = scores.map(([code, score], i) => {
+        const dis = DISORDERS[code];
+        const isTop = (i === 0);
+        const badgeClass = score === 0 ? 'badge-zero' : isTop ? 'badge-top-result' : 'badge-other';
+        const badgeLabel = score === 0 ? 'Tidak Terdeteksi' : isTop ? 'Hasil Utama' : 'Indikator Lain';
+        const scoreClass = score === 0 ? 'cf-disorder-score score-zero' : 'cf-disorder-score';
+        const bodyOpen = isTop ? 'open' : '';
+        const chevOpen = isTop ? 'open' : '';
+        const bodyContent = isTop ? buildCFStepByStep(code) : '';
+
+        return `
+      <div class="cf-disorder-block">
+        <div class="cf-disorder-header" onclick="toggleCFBlock('${code}')">
+          <div class="cf-disorder-name">
+            <span class="cf-disorder-badge ${badgeClass}">${badgeLabel}</span>
+            ${dis?.name || code}
+          </div>
+          <div style="display:flex;align-items:center;gap:.75rem">
+            <span class="${scoreClass}">${score}%</span>
+            <span class="cf-chevron ${chevOpen}" id="cf-chev-${code}">▼</span>
+          </div>
+        </div>
+        <div class="cf-disorder-body ${bodyOpen}" id="cf-body-${code}">${bodyContent}</div>
+      </div>`;
+      }).join('');
+
+      const circ = 295.3;
+      const dash = (topScore / 100) * circ;
+
+      document.getElementById('results-content').innerHTML = `
+    <div class="results-top-row">
+      <div class="results-header">
+        <h1>Hasil Analisis</h1>
+        <p>Berdasarkan metode Certainty Factor yang menggabungkan bobot kepakaran dan tingkat keyakinan Anda.</p>
+      </div>
+    </div>
+
+    <div class="primary-card">
+      <div class="primary-left">
+        <div style="flex-shrink:0">
+          <svg class="donut" viewBox="0 0 120 120">
+            <circle class="donut-track" cx="60" cy="60" r="47"/>
+            <circle class="donut-fill" cx="60" cy="60" r="47"
+              stroke-dasharray="0 ${circ}" stroke-dashoffset="${circ / 4}"
+              id="donut-arc" transform="rotate(-90 60 60)"/>
+            <text x="60" y="53" text-anchor="middle" font-family="Lora,serif" font-size="22" font-weight="700" fill="#0f0e17" id="donut-num">0%</text>
+            <text x="60" y="69" text-anchor="middle" font-family="Outfit,sans-serif" font-size="9" fill="#8e8ba8">Kesesuaian</text>
+          </svg>
+        </div>
+        <div class="primary-info" style="flex:1">
+          <span class="badge-top">🏆 Hasil Utama</span>
+          <h2>${topDisorder?.name || topCode}</h2>
+          <p>Sistem mendeteksi pola yang mengarah pada <strong>${topDisorder?.name || topCode}</strong> dengan tingkat kesesuaian CF sebesar <strong>${topScore}%</strong>.</p>
+          <ul class="pill-list">
+            ${relatedSymptoms.map(s => `<li>${s}</li>`).join('')}
+          </ul>
+          <div class="result-actions">
+            <button class="btn btn-outline" onclick="resetAnswers();showPage('assessment')">🔄 Ulangi Asesmen</button>
+            <button class="btn btn-primary download-pdf-btn" onclick="downloadResultsAsPDF()">📄 Unduh sebagai PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    ${otherHtml}
+
+    <div class="cf-section">
+      <div class="cf-section-title">📊 Detail Perhitungan Certainty Factor</div>
+      <p style="font-size:.85rem;color:var(--ink-mid);margin-bottom:1.25rem">
+        Klik setiap gangguan untuk melihat langkah-langkah perhitungan CF secara detail.
+        Baris berwarna menunjukkan gejala yang aktif (CF User &gt; 0).
+      </p>
+      ${cfBlocks}
+    </div>
+  `;
+
+      setTimeout(() => {
+        const arc = document.getElementById('donut-arc');
+        const num = document.getElementById('donut-num');
+        if (arc) arc.style.strokeDasharray = `${dash} ${circ}`;
+        if (num) {
+          let val = 0;
+          const iv = setInterval(() => { val = Math.min(val + 2, topScore); num.textContent = val + '%'; if (val >= topScore) clearInterval(iv) }, 20);
+        }
+      }, 100);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => showPage('home'));
+  </script>
+</body>
+
+</html>
